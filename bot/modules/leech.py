@@ -16,6 +16,7 @@ from bot.helper.mirror_utils.status_utils.leech_listeners import LeechListeners
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.upload_utils.telegramUploader import TelegramUploader
 from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
+from bot.helper.telegram_helper.message_utils import update_all_messages
 from bot.helper.ext_utils.user_prefs import get_user_pref
 
 import pathlib
