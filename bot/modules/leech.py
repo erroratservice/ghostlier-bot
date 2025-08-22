@@ -12,7 +12,7 @@ from bot.helper.mirror_utils.download_utils.gdrive_download import GDdownload
 from bot.helper.mirror_utils.download_utils.aio_download import AioHttpDownload
 from bot.helper.mirror_utils.download_utils.qbit_download import QbitWrap
 from bot.helper.mirror_utils.status_utils import listeners
-from bot.helper.mirror_utils.status_utils.leech_listeners import LeechListener
+from bot.helper.mirror_utils.status_utils.leech_listeners import LeechListeners
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.status_utils.tar_status import TarStatus
 from bot.helper.mirror_utils.status_utils.zip_status import ZipStatus
@@ -34,7 +34,7 @@ ariaDlManager.start_listener()
 qbit = QbitWrap()
 qbitclient = qbit.get_client()
 
-class LeechListener(listeners.MirrorListeners):
+class LeechListener(LeechListeners):
     def __init__(self, bot, update, isTar=False, tag=None, extract=False, isZip=False, source=None, genid=None, password=None):
         super().__init__(bot, update)
         self.isTar = isTar
