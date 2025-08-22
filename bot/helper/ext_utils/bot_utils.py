@@ -20,6 +20,7 @@ URL_REGEX = r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+"
 
 class MirrorStatus:
     STATUS_UPLOADING = "Uploading"
+    STATUS_TG_UPLOADING = "TGUPLOADING"
     STATUS_DOWNLOADING = "Filename"
     STATUS_WAITING = "Queued"
     STATUS_FAILED = "Failed. Cleaning download"

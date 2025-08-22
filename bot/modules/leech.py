@@ -1,6 +1,6 @@
 import requests
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+from pyrogram.types import Message
 from bot import Interval, DOWNLOAD_DIR, DOWNLOAD_STATUS_UPDATE_INTERVAL, download_dict, download_dict_lock, AUTHORIZED_CHATS
 from bot.helper.ext_utils import fs_utils, bot_utils
 from bot.helper.ext_utils.bot_utils import setInterval
@@ -25,6 +25,9 @@ import random
 import string
 import asyncio
 
+from bot.helper.mirror_utils.upload_utils.telegramUploader import TelegramUploader
+from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
+
 ariaDlManager = AriaDownloadHelper()
 ariaDlManager.start_listener()
 qbit = QbitWrap()
@@ -41,27 +44,35 @@ class LeechListener(listeners.MirrorListeners):
         self.genid = genid
         self.password = password
 
+    def onUploadProgress(self, current, total):
+        # Optional: update status messages here
+        pass
+
+    def onUploadComplete(self, msg):
+        sendMessage(f"{msg}", self.bot, self.message)
+
+    def onUploadError(self, error):
+        sendMessage(f"Telegram upload error: {error}", self.bot, self.message)
+
     def onDownloadComplete(self):
         with download_dict_lock:
             download = download_dict[self.uid]
             name = download.name()
             size = download.size_raw()
-            source = download.sourcemsg()
-            dir_path = f"{DOWNLOAD_DIR}{self.uid}/"
             m_path = download.upload_path()
         path = m_path
         if self.isTar:
             path = fs_utils.tar(m_path, self) or m_path
         elif self.isZip:
-            path = fs_utils.zip(m_path, dir_path, self) or m_path
+            path = fs_utils.zip(m_path, f"{DOWNLOAD_DIR}{self.uid}/", self) or m_path
         elif self.extract:
             path = fs_utils.get_base_name(m_path)
-        up_name = pathlib.PurePath(path).name
-        if up_name == "None":
-            up_name = "".join(os.listdir(f'{DOWNLOAD_DIR}{self.uid}/'))
-        from bot.helper.mirror_utils.upload_utils.telegramTools import TelegramUploadHelper
-        tg_helper = TelegramUploadHelper(self.bot, self.message.chat.id, self)
-        asyncio.run(tg_helper.upload_file(path, caption=up_name))
+        up_name = os.path.basename(path)
+        uploader = TelegramUploader(self.bot, self.message.chat.id, self, path)
+        upload_status = UploadStatus(uploader, os.path.getsize(path), self)
+        with download_dict_lock:
+            download_dict[self.uid] = upload_status
+        asyncio.run(uploader.upload())
 
 def _leech(bot: Client, message: Message, isTar=False, extract=False, isZip=False):
     args = message.text.split(" ", maxsplit=1)

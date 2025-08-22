@@ -12,6 +12,7 @@ from bot import (
     TELEGRAM_HASH
 )
 from bot.helper.ext_utils import fs_utils
+from bot.modules import leech
 
 BOT_USERNAME = None
 
