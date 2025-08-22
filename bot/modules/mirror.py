@@ -99,7 +99,7 @@ class MirrorListener(listeners.MirrorListeners):
                             threading.Thread(target=shutil.rmtree, args=(m_path,'ignore_errors=True')).start()
                             LOGGER.info(f"Deleting Folder : {m_path}")
                         else:
-                            return    
+                            return
                     else:
                         sendMessage(f"{uname} <b>Not Enough Space to Archive</b>\nUploading without Zipping",self.bot,self.message)
                         #self.onDownloadError("<b>Not Enough Space to Archive</b>\n<i>Download Stopped</i>\n#archivenospace")
@@ -128,7 +128,7 @@ class MirrorListener(listeners.MirrorListeners):
                     else:
                         sendMessage(f"{uname} <b>Not Enough Space to Archive</b>\nUploading without Zipping",self.bot,self.message)
                         #self.onDownloadError("<b>Not Enough Space to Archive</b>\n<i>Download Stopped</i>\n#archivenospace")
-                        path = m_path               
+                        path = m_path
                 except FileNotFoundError:
                     LOGGER.info('File to archive not found!')
                     self.onUploadError('Internal error occurred!!')
@@ -164,7 +164,7 @@ class MirrorListener(listeners.MirrorListeners):
                 else:
                     sendMessage(f"{uname} <b>Not Enough Space to Extract</b>\nUploading without Extracing",self.bot,self.message)
                     #self.onDownloadError("<b>Not Enough Space to Archive</b>\n<i>Download Stopped</i>\n#archivenospace")
-                    path = m_path         
+                    path = m_path
             except NotSupportedExtractionArchive:
                 LOGGER.info("Not any valid archive, Canceling!")
                 fullpath = f'{DOWNLOAD_DIR}{self.uid}'
@@ -204,7 +204,7 @@ class MirrorListener(listeners.MirrorListeners):
         if count == 0:
             self.clean()
         else:
-            update_all_messages()    
+            update_all_messages()
 
     def onDownloadError(self, error):
         LOGGER.info(self.update.chat.id)
@@ -285,12 +285,12 @@ class MirrorListener(listeners.MirrorListeners):
             try:
                 msgid = self.source.id
                 chat_id = str(self.source.chat.id)
-            except:    
+            except:
                 chat_id = str(6969) #pass random values for watch upload complete to work
-            url = None    
+            url = None
             if chat_id.startswith('-100'):
                 url = f'<a href="https://t.me/c/{chat_id[4::]}/{msgid}">Source Message 👈🏻</a>'
-            if url:    
+            if url:
                 if ENABLE_DRIVE_SEARCH:
                     msg = f'<b>Filename</b>: <code>{download_dict[self.uid].name()}</code>\n\n<b>Size</b>: <code>{download_dict[self.uid].size()}</code>\n\n<b>cc</b>: {uname}\n\n{url}\n<i>Join TD to Access Gdrive Links🤘🏻\nDont Share Links In Public</i>\n#Uploads❤️'
                 else:
@@ -314,7 +314,7 @@ class MirrorListener(listeners.MirrorListeners):
                 pass
             del download_dict[self.uid]
             count = len(download_dict)
-        LOGGER.info(f"IN Here!")    
+        LOGGER.info(f"IN Here!")
         sendMarkup(msg, self.bot, self.update, InlineKeyboardMarkup(buttons.build_menu(2)))
         if count == 0:
             self.clean()
@@ -351,7 +351,7 @@ class MirrorListener(listeners.MirrorListeners):
         if count == 0:
             self.clean()
         else:
-            update_all_messages()  
+            update_all_messages()
 
 def _mirror(bot: Client, message: Message, isTar=False, extract=False, isZip=False):
     args = message.text.split(" ",maxsplit=1)
@@ -365,11 +365,7 @@ def _mirror(bot: Client, message: Message, isTar=False, extract=False, isZip=Fal
         else:
             cc = f'<a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>'
         message_args = message.text.split(' ',maxsplit=1)
-        try:
-            source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>{message_args[1]}</code>\n\ncc: {cc}",bot,message)
-        except:
-            if reply_to.text:
-                source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>{reply_to.text}</code>\n\ncc: {cc}",bot,message) 
+        source = message # Use the original message as the source
         try:
             link = message_args[1]
         except IndexError:
@@ -389,17 +385,14 @@ def _mirror(bot: Client, message: Message, isTar=False, extract=False, isZip=Fal
             if len(link) == 0:
                 if file is not None:
                     if file.mime_type != "application/x-bittorrent":
-                        source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>A Telegram Media File</code>\n\ncc: {cc}",bot,message)
                         listener = MirrorListener(bot, message, isTar, tag, extract, isZip, source)
                         tg_downloader = TelegramDownloadHelper(listener)
                         tg_downloader.add_download(reply_to, f'{DOWNLOAD_DIR}{listener.uid}/')
-                        uriadded = sendUriAdded(message, bot)
-                        sendMessage(f"{uriadded}", bot, message)
+                        sendStatusMessage(message, bot)
                         if len(Interval) == 0:
                             Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
                         return
                     else:
-                        source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>A Torrent File</code>\n\ncc: {cc}",bot,message)
                         istorrentfile = True
                         link = reply_to.download()
         else:
@@ -419,47 +412,44 @@ def _mirror(bot: Client, message: Message, isTar=False, extract=False, isZip=Fal
 
         if (isitmega):
             uhwutmega = f"{uname} <b>We don't download that here :3</b>. Mega isn't Supported"
-            sendMessage(f"{uhwutmega}", bot, message) 
+            sendMessage(f"{uhwutmega}", bot, message)
             return
-        
+
         if  bot_utils.is_url(link) and not bot_utils.is_magnet(link) and not bot_utils.is_torrent(link):
             if bot_utils.isitwebpage(link) and not isitgdrive:
                 sendMessage(f"<b>{uname} It Goes To a Webpage. Please Check The Link</b>", bot, message)
                 return
-                
+
         if (isitgdrive):
-            listener = MirrorListener(bot, message, isTar, tag, extract, isZip, source) 
+            listener = MirrorListener(bot, message, isTar, tag, extract, isZip, source)
             gd = GDdownload()
             if len(Interval) == 0:
-                Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages)) 
-            gd.add_download(link, f'{DOWNLOAD_DIR}{listener.uid}',listener)   
+                Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
+            gd.add_download(link, f'{DOWNLOAD_DIR}{listener.uid}',listener)
         elif istorrentfile:
             listener = MirrorListener(bot, message, isTar, tag, extract, isZip, source, None, None)
-            LOGGER.info("Meh QBittorrent Torrent") 
+            LOGGER.info("Meh QBittorrent Torrent")
             if len(Interval) == 0:
-                Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages)) 
-            uriadded = sendUriAdded(message, bot)    
-            sendMessage(f"{uriadded}", bot, message)  
-            qo = QbitWrap()  
+                Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
+            sendStatusMessage(message, bot)
+            qo = QbitWrap()
             qo.register_torrent(bot, message,link, listener, file=True)
         elif isitmagnet:
             listener = MirrorListener(bot, message, isTar, tag, extract, isZip, source, None, None)
-            LOGGER.info("Meh QBittorrent Magnet") 
+            LOGGER.info("Meh QBittorrent Magnet")
             if len(Interval) == 0:
-                Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages)) 
-            uriadded = sendUriAdded(message, bot)    
-            sendMessage(f"{uriadded}", bot, message)  
-            qo = QbitWrap()  
+                Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
+            sendStatusMessage(message, bot)
+            qo = QbitWrap()
             qo.register_torrent(bot, message,link, listener, magnet=True)
         else:
             listener = MirrorListener(bot, message, isTar, tag, extract, isZip, source, genid)
             ariaDlManager.add_download(link, f'{DOWNLOAD_DIR}/{listener.uid}/',listener)
-            uriadded = sendUriAdded(message, bot)
-            sendMessage(f"{uriadded}", bot, message)
+            sendStatusMessage(message, bot)
             if len(Interval) == 0:
                 Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
     else:
-        sendMessage(f"No Download Source Provided", bot, message) 
+        sendMessage(f"No Download Source Provided", bot, message)
 
 @Client.on_message(
     filters.command(BotCommands.wgetCommand) &
@@ -476,12 +466,11 @@ async def wget(bot: Client, message: Message, isTar=False, extract=False, isZip=
         source = sendMessage(f"{uname} has sent:\n\n<i>{args[0]}</i> <code>{args[1]}</code>\n\ncc: {cc}",bot,message)
         listener = MirrorListener(bot, message, isTar, extract, isZip, source)
         link = args[1]
-        LOGGER.info("Meh aio https") 
+        LOGGER.info("Meh aio https")
         ao = AioHttpDownload()
         if len(Interval) == 0:
-            Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages)) 
-        uriadded = sendUriAdded(message, bot)    
-        sendMessage(f"{uriadded}", bot, message)    
+            Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
+        sendStatusMessage(message, bot)
         await ao.add_download(link, f'{DOWNLOAD_DIR}{listener.uid}',listener)
     else:
         sendMessage("Provide A Http Link to Upload.",bot, message)
