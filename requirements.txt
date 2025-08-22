@@ -1,3 +1,4 @@
+aria2p
 pyrofork==2.2.11
 tgcrypto
 requests
