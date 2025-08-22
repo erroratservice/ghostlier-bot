@@ -14,10 +14,10 @@ from bot.helper.mirror_utils.download_utils.qbit_download import QbitWrap
 from bot.helper.mirror_utils.status_utils import listeners
 from bot.helper.mirror_utils.status_utils.leech_listeners import LeechListeners
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
-from bot.helper.mirror_utils.status_utils.tar_status import TarStatus
-from bot.helper.mirror_utils.status_utils.zip_status import ZipStatus
-from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.mirror_utils.upload_utils.telegramUploader import TelegramUploader
+from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
+from bot.helper.ext_utils.user_prefs import get_user_pref
+
 import pathlib
 import os
 import threading
@@ -25,9 +25,6 @@ import shutil
 import random
 import string
 import asyncio
-
-from bot.helper.mirror_utils.upload_utils.telegramUploader import TelegramUploader
-from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
 
 ariaDlManager = AriaDownloadHelper()
 ariaDlManager.start_listener()
@@ -79,7 +76,17 @@ class LeechListener(LeechListeners):
         elif self.extract:
             path = fs_utils.get_base_name(m_path)
         up_name = os.path.basename(path)
-        uploader = TelegramUploader(self.bot, self.message.chat.id, self, path)
+        user_id = self.message.from_user.id if self.message.from_user else None
+        leech_mode = get_user_pref(user_id, "leech_mode", "document")
+        thumbnail = get_user_pref(user_id, "thumbnail", None)
+        uploader = TelegramUploader(
+            self.bot,
+            self.message.chat.id,
+            self,
+            path,
+            as_document=(leech_mode == "document"),
+            thumbnail=thumbnail
+        )
         upload_status = UploadStatus(uploader, os.path.getsize(path), self)
         with download_dict_lock:
             download_dict[self.uid] = upload_status
