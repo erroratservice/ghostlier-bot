@@ -9,7 +9,7 @@ natsort
 Pillow==9.4.0
 tenacity==8.2.0
 aioshutil==1.3
-python-dotenv=-1.0.0
+python-dotenv=1.0.0
 python-magic
 psutil==5.9.4
 google-auth
