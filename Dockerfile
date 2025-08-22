@@ -29,7 +29,15 @@ RUN qbittorrent-nox --version
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
-COPY . .
+
+# Copy only the requirements file first
+COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip3 install -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
 RUN chmod +x aria.sh
 CMD ["bash", "start.sh"]
