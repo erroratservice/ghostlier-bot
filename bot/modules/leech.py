@@ -90,7 +90,7 @@ class LeechListener(LeechListeners):
         # Optional: update status messages here
         pass
 
-    def onUploadComplete(self, msg):
+    def onUploadComplete(self):
         with download_dict_lock:
             try:
                 fs_utils.clean_download(download_dict[self.uid].path())
@@ -98,7 +98,6 @@ class LeechListener(LeechListeners):
                 pass
             del download_dict[self.uid]
             count = len(download_dict)
-        sendMessage(f"{msg}", self.bot, self.message)
         if count == 0:
             self.clean()
         else:
