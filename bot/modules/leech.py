@@ -54,7 +54,7 @@ class LeechListener(LeechListeners):
             pass
 
     def onDownloadStarted(self):
-        sendMessage("Download started!", self.bot, self.message)
+        pass
 
     def onDownloadProgress(self, current=None, total=None):
         # Optional: update status messages here
@@ -84,7 +84,7 @@ class LeechListener(LeechListeners):
         sendMessage(f"Download error: {error}", self.bot, self.message)
 
     def onUploadStarted(self):
-        sendMessage("Upload started!", self.bot, self.message)
+        pass
 
     def onUploadProgress(self, current=None, total=None):
         # Optional: update status messages here
@@ -112,16 +112,9 @@ def _leech(bot: Client, message: Message, isTar=False, extract=False, isZip=Fals
     istorrentfile = False
     genid = ''.join(random.SystemRandom().choices(string.ascii_letters + string.digits, k=4))
     if len(args) > 1 or reply_to:
-        uname = f'<a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>'
-        cc = f"@{message.from_user.username}" if message.from_user.username else uname
-        message_args = message.text.split(' ', maxsplit=1)
+        source = message
         try:
-            source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>{message_args[1]}</code>\n\ncc: {cc}", bot, message)
-        except:
-            if reply_to and reply_to.text:
-                source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>{reply_to.text}</code>\n\ncc: {cc}", bot, message)
-        try:
-            link = message_args[1]
+            link = args[1]
         except IndexError:
             link = ''
         link = link.strip()
@@ -137,17 +130,14 @@ def _leech(bot: Client, message: Message, isTar=False, extract=False, isZip=Fals
                 link = reply_to.text
             if len(link) == 0:
                 if file is not None and file.mime_type != "application/x-bittorrent":
-                    source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>A Telegram Media File</code>\n\ncc: {cc}", bot, message)
                     listener = LeechListener(bot, message, isTar, tag, extract, isZip, source)
                     tg_downloader = TelegramDownloadHelper(listener)
                     tg_downloader.add_download(reply_to, f'{DOWNLOAD_DIR}{listener.uid}/')
-                    uriadded = sendUriAdded(message, bot)
-                    sendMessage(f"{uriadded}", bot, message)
+                    sendStatusMessage(message, bot)
                     if len(Interval) == 0:
                         Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
                     return
                 elif file and file.mime_type == "application/x-bittorrent":
-                    source = sendMessage(f"{uname} has sent:\n\n<i>{message_args[0]}</i> <code>A Torrent File</code>\n\ncc: {cc}", bot, message)
                     istorrentfile = True
                     link = reply_to.download()
         else:
@@ -171,23 +161,20 @@ def _leech(bot: Client, message: Message, isTar=False, extract=False, isZip=Fals
             listener = LeechListener(bot, message, isTar, tag, extract, isZip, source, None, None)
             if len(Interval) == 0:
                 Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
-            uriadded = sendUriAdded(message, bot)
-            sendMessage(f"{uriadded}", bot, message)
+            sendStatusMessage(message, bot)
             qo = QbitWrap()
             qo.register_torrent(bot, message, link, listener, file=True)
         elif isitmagnet:
             listener = LeechListener(bot, message, isTar, tag, extract, isZip, source, None, None)
             if len(Interval) == 0:
                 Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
-            uriadded = sendUriAdded(message, bot)
-            sendMessage(f"{uriadded}", bot, message)
+            sendStatusMessage(message, bot)
             qo = QbitWrap()
             qo.register_torrent(bot, message, link, listener, magnet=True)
         else:
             listener = LeechListener(bot, message, isTar, tag, extract, isZip, source, genid)
             ariaDlManager.add_download(link, f'{DOWNLOAD_DIR}/{listener.uid}/', listener)
-            uriadded = sendUriAdded(message, bot)
-            sendMessage(f"{uriadded}", bot, message)
+            sendStatusMessage(message, bot)
             if len(Interval) == 0:
                 Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
     else:
