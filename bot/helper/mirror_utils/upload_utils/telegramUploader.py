@@ -34,8 +34,18 @@ class TelegramUploader:
                 caption=self.name,
                 progress=self._upload_progress,
             )
+
+            completion_message = f"Telegram upload finished: {self.name}"
+            # Use the listener's message object to reply
+            await self.client.send_message(
+                chat_id=self.listener.message.chat.id,
+                text=completion_message,
+                reply_to_message_id=self.listener.message.id
+            )
+
             if hasattr(self.listener, "onUploadComplete"):
-                self.listener.onUploadComplete(f"Telegram upload finished: {self.name}")
+                self.listener.onUploadComplete()
+
         except FloodWait as e:
             await asyncio.sleep(e.value)
             await self.upload()
