@@ -30,7 +30,6 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
 COPY . .
-RUN python3 -m venv ghost
-RUN ghost/bin/pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install -r requirements.txt
 RUN chmod +x aria.sh
 CMD ["bash", "start.sh"]
