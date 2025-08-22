@@ -67,10 +67,15 @@ class MirrorListener(listeners.MirrorListeners):
         pass
 
     def clean(self):
+        # Await the async cleanup function
+        asyncio.run(self.clean_async())
+
+    async def clean_async(self):
         try:
-            Interval[0].cancel()
-            del Interval[0]
-            delete_all_messages()
+            if Interval:
+                Interval[0].cancel()
+                del Interval[0]
+            await delete_all_messages_async()
         except IndexError:
             pass
 
@@ -359,15 +364,9 @@ def _mirror(bot: Client, message: Message, isTar=False, extract=False, isZip=Fal
     istorrentfile = False
     genid = ''.join(random.SystemRandom().choices(string.ascii_letters + string.digits, k=4))
     if len(args) > 1 or reply_to:
-        uname = f'<a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>'
-        if message.from_user.username:
-            cc = f"@{message.from_user.username}"
-        else:
-            cc = f'<a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>'
-        message_args = message.text.split(' ',maxsplit=1)
         source = message # Use the original message as the source
         try:
-            link = message_args[1]
+            link = args[1]
         except IndexError:
             link = ''
         LOGGER.info(link)
@@ -458,12 +457,7 @@ def _mirror(bot: Client, message: Message, isTar=False, extract=False, isZip=Fal
 async def wget(bot: Client, message: Message, isTar=False, extract=False, isZip=False, source = None):
     args = message.text.split(" ",maxsplit=1)
     if len(args) > 1:
-        if message.from_user.username:
-            cc = f"@{message.from_user.username}"
-        else:
-            cc = f'<a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>'
-        uname = f'<a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>'
-        source = sendMessage(f"{uname} has sent:\n\n<i>{args[0]}</i> <code>{args[1]}</code>\n\ncc: {cc}",bot,message)
+        source = message
         listener = MirrorListener(bot, message, isTar, extract, isZip, source)
         link = args[1]
         LOGGER.info("Meh aio https")
