@@ -16,7 +16,7 @@ from bot.helper.mirror_utils.status_utils.leech_listeners import LeechListeners
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.upload_utils.telegramUploader import TelegramUploader
 from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
-from bot.helper.telegram_helper.message_utils import update_all_messages, sendStatusMessage, sendMessage, editMessage, sendMarkup, deleteMessage, deleteMessageasync, delete_all_messages, sendStatusMessage, SendDocument
+from bot.helper.telegram_helper.message_utils import update_all_messages, sendStatusMessage, sendMessage, editMessage, sendMarkup, deleteMessage, deleteMessageasync, delete_all_messages, sendStatusMessage
 from bot.helper.ext_utils.user_prefs import get_user_pref
 
 import pathlib
@@ -64,35 +64,35 @@ class LeechListener(LeechListeners):
         pass
 
     def onDownloadComplete(self):
-    with download_dict_lock:
-        download = download_dict[self.uid]
-        name = download.name()
-        size = download.size_raw()
-        m_path = download.upload_path()
-    path = m_path
-    if self.isTar:
-        path = fs_utils.tar(m_path, self) or m_path
-    elif self.isZip:
-        path = fs_utils.zip(m_path, f"{DOWNLOAD_DIR}{self.uid}/", self) or m_path
-    elif self.extract:
-        path = fs_utils.get_base_name(m_path)
-    up_name = os.path.basename(path)
-    user_id = self.message.from_user.id if self.message.from_user else None
-    leech_mode = get_user_pref(user_id, "leech_mode", "document")
-    thumbnail = get_user_pref(user_id, "thumbnail", None)
-    uploader = TelegramUploader(
-        self.bot,
-        self.message.chat.id,
-        self,
-        path,
-        as_document=(leech_mode == "document"),
-        thumbnail=thumbnail
-    )
-    upload_status = UploadStatus(uploader, os.path.getsize(path), self)
-    with download_dict_lock:
-        download_dict[self.uid] = upload_status
-    asyncio.create_task(uploader.upload())
-    
+        with download_dict_lock:
+            download = download_dict[self.uid]
+            name = download.name()
+            size = download.size_raw()
+            m_path = download.upload_path()
+        path = m_path
+        if self.isTar:
+            path = fs_utils.tar(m_path, self) or m_path
+        elif self.isZip:
+            path = fs_utils.zip(m_path, f"{DOWNLOAD_DIR}{self.uid}/", self) or m_path
+        elif self.extract:
+            path = fs_utils.get_base_name(m_path)
+        up_name = os.path.basename(path)
+        user_id = self.message.from_user.id if self.message.from_user else None
+        leech_mode = get_user_pref(user_id, "leech_mode", "document")
+        thumbnail = get_user_pref(user_id, "thumbnail", None)
+        uploader = TelegramUploader(
+            self.bot,
+            self.message.chat.id,
+            self,
+            path,
+            as_document=(leech_mode == "document"),
+            thumbnail=thumbnail
+        )
+        upload_status = UploadStatus(uploader, os.path.getsize(path), self)
+        with download_dict_lock:
+            download_dict[self.uid] = upload_status
+        asyncio.create_task(uploader.upload())
+
     def onDownloadError(self, error: str):
         sendMessage(f"Download error: {error}", self.bot, self.message)
 
