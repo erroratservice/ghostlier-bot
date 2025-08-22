@@ -11,3 +11,4 @@ tenacity
 aioshutil
 python-dotenv
 python-magic
+psutil
