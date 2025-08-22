@@ -40,14 +40,15 @@ class TelegramUploader:
             # Handle thumbnail (it can be file_id or a file path)
             thumb_arg = None
             if self.thumbnail:
-                # If it's a file_id, pass directly. If it's a local file, download/open it.
                 thumb_arg = self.thumbnail
+
+            caption = self.name  # Use filename as caption
 
             if not self.as_document and is_video:
                 sent_msg = await self.client.send_video(
                     chat_id=self.chat_id,
                     video=self.path,
-                    caption=self.name,
+                    caption=cap_mono,
                     thumb=thumb_arg,
                     progress=self._upload_progress,
                 )
@@ -55,7 +56,7 @@ class TelegramUploader:
                 sent_msg = await self.client.send_audio(
                     chat_id=self.chat_id,
                     audio=self.path,
-                    caption=self.name,
+                    caption=cap_mono,
                     thumb=thumb_arg if thumb_arg else None,
                     progress=self._upload_progress,
                 )
@@ -63,7 +64,7 @@ class TelegramUploader:
                 sent_msg = await self.client.send_photo(
                     chat_id=self.chat_id,
                     photo=self.path,
-                    caption=self.name,
+                    caption=cap_mono,
                     progress=self._upload_progress,
                 )
             else:
@@ -71,7 +72,7 @@ class TelegramUploader:
                 sent_msg = await self.client.send_document(
                     chat_id=self.chat_id,
                     document=self.path,
-                    caption=self.name,
+                    caption=cap_mono,
                     thumb=thumb_arg if thumb_arg else None,
                     progress=self._upload_progress,
                 )
