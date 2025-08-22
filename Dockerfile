@@ -8,7 +8,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install dependencies (including all required for qbittorrent-nox 4.1.7)
 RUN apt-get update && \
-    apt-get install -y wget ca-certificates python3 python3-pip python3.8-venv aria2 curl git \
+    apt-get install -y wget ca-certificates python3 python3-pip python3.8-venv aria2 curl git ffmpeg \
     libssl1.1 libtorrent-rasterbar9 zlib1g \
     libqt5core5a libqt5network5 libqt5xml5
 
