@@ -9,17 +9,14 @@ import socket
 from pyrogram import Client
 from telegraph import Telegraph
 
-def generate_telegraph_token():
-    try:
-        telegraph = Telegraph()
-        response = telegraph.create_account(short_name="ghostlier-bot")
-        return response["access_token"]
-    except Exception as e:
-        import logging
-        logging.error(f"Failed to generate Telegraph token: {e}")
-        return None
-
-TELEGRAPH_TOKEN = generate_telegraph_token()
+telegraph = Telegraph(domain="graph.org")
+try:
+    response = telegraph.create_account(short_name="ghostlier-bot")
+    TELEGRAPH_TOKEN = response["access_token"]
+except Exception as e:
+    import logging
+    logging.error(f"Failed to generate Telegraph token: {e}")
+    TELEGRAPH_TOKEN = None
 socket.setdefaulttimeout(600)
 
 botStartTime = time.time()
