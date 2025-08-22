@@ -10,3 +10,4 @@ Pillow
 tenacity
 aioshutil
 python-dotenv
+python-magic
