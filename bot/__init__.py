@@ -84,7 +84,6 @@ try:
     TELEGRAM_HASH = getConfig('TELEGRAM_HASH')
     BOT_USERNAME = getConfig('BOT_USERNAME')
     MAX_TORRENT_SIZE = getConfig('MAX_TORRENT_SIZE')
-    TELEGRAPH_TOKEN = getConfig('TELEGRAPH_TOKEN')
     MAX_SIMULTANEOUS_DOWNLOADS = getConfig('MAX_SIMULTANEOUS_DOWNLOADS')
 except KeyError as e:
     LOGGER.error("One or more env variables missing! Exiting now")
