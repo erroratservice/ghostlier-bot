@@ -7,34 +7,11 @@ import aria2p
 from dotenv import load_dotenv
 import socket
 from pyrogram import Client
+from telegraph import Telegraph
 
-# --- Telegraph auto token generation ---
-try:
-    from telegraph import Telegraph
-except ImportError:
-    Telegraph = None
-
-def get_or_create_telegraph_token():
-    telegraph_token = os.getenv("TELEGRAPH_TOKEN")
-    if telegraph_token:
-        return telegraph_token
-    if Telegraph is None:
-        logging.warning("telegraph package is not installed. Telegraph token generation skipped.")
-        return None
-    telegraph = Telegraph()
-    response = telegraph.create_account(short_name="ghostlier-bot")
-    telegraph_token = response["access_token"]
-    # Optionally persist to .env
-    try:
-        with open(".env", "a") as envfile:
-            envfile.write(f"\nTELEGRAPH_TOKEN={telegraph_token}\n")
-    except Exception as e:
-        logging.warning(f"Unable to write TELEGRAPH_TOKEN to .env: {e}")
-    return telegraph_token
-
-TELEGRAPH_TOKEN = get_or_create_telegraph_token()
-# -------------------------------------
-
+telegraph = Telegraph()
+response = telegraph.create_account(short_name="ghostlier-bot")
+TELEGRAPH_TOKEN = response["access_token"]
 socket.setdefaulttimeout(600)
 
 botStartTime = time.time()
