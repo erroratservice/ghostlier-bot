@@ -45,6 +45,14 @@ class LeechListener(LeechListeners):
         self.genid = genid
         self.password = password
 
+    def clean(self):
+        try:
+            Interval[0].cancel()
+            del Interval[0]
+            delete_all_messages()
+        except IndexError:
+            pass
+
     def onDownloadStarted(self):
         sendMessage("Download started!", self.bot, self.message)
 
@@ -83,7 +91,18 @@ class LeechListener(LeechListeners):
         pass
 
     def onUploadComplete(self, msg):
+        with download_dict_lock:
+            try:
+                fs_utils.clean_download(download_dict[self.uid].path())
+            except FileNotFoundError:
+                pass
+            del download_dict[self.uid]
+            count = len(download_dict)
         sendMessage(f"{msg}", self.bot, self.message)
+        if count == 0:
+            self.clean()
+        else:
+            update_all_messages()
 
     def onUploadError(self, error):
         sendMessage(f"Telegram upload error: {error}", self.bot, self.message)
