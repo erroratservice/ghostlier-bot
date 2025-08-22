@@ -44,15 +44,12 @@ class LeechListener(listeners.MirrorListeners):
         self.genid = genid
         self.password = password
 
-    def onUploadProgress(self, current, total):
+    def onDownloadStarted(self):
+        sendMessage("Download started!", self.bot, self.message)
+
+    def onDownloadProgress(self, current=None, total=None):
         # Optional: update status messages here
         pass
-
-    def onUploadComplete(self, msg):
-        sendMessage(f"{msg}", self.bot, self.message)
-
-    def onUploadError(self, error):
-        sendMessage(f"Telegram upload error: {error}", self.bot, self.message)
 
     def onDownloadComplete(self):
         with download_dict_lock:
@@ -73,6 +70,22 @@ class LeechListener(listeners.MirrorListeners):
         with download_dict_lock:
             download_dict[self.uid] = upload_status
         asyncio.run(uploader.upload())
+
+    def onDownloadError(self, error: str):
+        sendMessage(f"Download error: {error}", self.bot, self.message)
+
+    def onUploadStarted(self):
+        sendMessage("Upload started!", self.bot, self.message)
+
+    def onUploadProgress(self, current=None, total=None):
+        # Optional: update status messages here
+        pass
+
+    def onUploadComplete(self, msg):
+        sendMessage(f"{msg}", self.bot, self.message)
+
+    def onUploadError(self, error):
+        sendMessage(f"Telegram upload error: {error}", self.bot, self.message)
 
 def _leech(bot: Client, message: Message, isTar=False, extract=False, isZip=False):
     args = message.text.split(" ", maxsplit=1)
