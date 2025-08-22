@@ -46,10 +46,15 @@ class LeechListener(LeechListeners):
         self.password = password
 
     def clean(self):
+        # Await the async cleanup function
+        asyncio.run(self.clean_async())
+
+    async def clean_async(self):
         try:
-            Interval[0].cancel()
-            del Interval[0]
-            delete_all_messages()
+            if Interval:
+                Interval[0].cancel()
+                del Interval[0]
+            await delete_all_messages_async()
         except IndexError:
             pass
 
