@@ -26,4 +26,10 @@ class _BotCommands:
         self.deleteCommand = ['delete',f"delete@{BOT_USERNAME}"]
         self.wgetCommand = ['wget',f"wget@{BOT_USERNAME}"]
 
+        # Added leech commands
+        self.LeechCommand = ['leech', f"leech@{BOT_USERNAME}"]
+        self.TarLeechCommand = ['tarleech', f"tarleech@{BOT_USERNAME}"]
+        self.ZipLeechCommand = ['zipleech', f"zipleech@{BOT_USERNAME}"]
+        self.UnzipLeechCommand = ['unzipleech', f"unzipleech@{BOT_USERNAME}"]
+
 BotCommands = _BotCommands()
