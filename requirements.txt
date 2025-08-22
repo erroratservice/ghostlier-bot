@@ -12,3 +12,6 @@ aioshutil
 python-dotenv
 python-magic
 psutil
+google-auth
+google-auth-oauthlib
+google-api-python-client
