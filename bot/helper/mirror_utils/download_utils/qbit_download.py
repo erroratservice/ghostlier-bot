@@ -49,7 +49,7 @@ class QbitWrap:
     def get_client(self, host=None,port=None,uname=None,passw=None,retry=2) -> qba.TorrentsAPIMixIn:
         """Creats and returns a client to communicate with qBittorrent server. Max Retries 2
         """
-        #getting the conn
+        #getting the conn 
         host = host if host is not None else "localhost"
         port = port if port is not None else "8090"
         uname = uname if uname is not None else "admin"
@@ -57,7 +57,7 @@ class QbitWrap:
         LOGGER.info(f"Trying to login in qBittorrent using creds {host} {port} {uname} {passw}")
 
         client = qba.Client(host=host,port=port,username=uname,password=passw)
-
+        
         #try to connect to the server :)
         try:
             client.auth_log_in()
@@ -72,7 +72,7 @@ class QbitWrap:
             if retry == 0:
                 LOGGER.error("Tried to get the client 3 times no luck")
                 return None
-
+            
             LOGGER.info("Oddly enough the qbittorrent server is not running.... Attempting to start at port {}".format(port))
             cmd = f"qbittorrent-nox -d --webui-port={port}"
             cmd = cmd.split(" ")
@@ -90,12 +90,12 @@ class QbitWrap:
         client = self.get_client()
         try:
             ctor = len(client.torrents_info())
-
+            
             ext_hash = Hash_Fetch.get_hash_magnet(magnet)
             ext_res = client.torrents_info(torrent_hashes=ext_hash)
             if len(ext_res) > 0:
                 LOGGER.info(f"This torrent is in list {ext_res} {magnet} {ext_hash}")
-                sendMessage(f"This torrent is alreaded in the leech list.", self.__listener.bot, self.__listener.message)
+                sendMessage(f"This torrent is alreaded in the leech list.", self.__listener.bot, self.__listener.message) 
                 return False
             # hot fix for the below issue
             savepath = os.path.join(DOWNLOAD_DIR, str(self.__listener.uid))
@@ -103,15 +103,15 @@ class QbitWrap:
             op = client.torrents_add(magnet, save_path=savepath)
 
             LOGGER.info(f"op is {op}")
-
-
+            
+            
             # TODO uncomment the below line and remove the above fix when fixed https://github.com/qbittorrent/qBittorrent/issues/13572
             # op = client.torrents_add(magnet)
 
             # torrents_add method dosent return anything so have to work around
             if op.lower() == "ok.":
                 st = datetime.now()
-
+                
                 ext_res = client.torrents_info(torrent_hashes=ext_hash)
                 if len(ext_res) > 0:
                     #LOGGER.info(f"Yayayay! Got torrent info from ext hash. {ext_res[0]}")
@@ -120,7 +120,7 @@ class QbitWrap:
                     if (datetime.now() - st).seconds >= 10:
                         LOGGER.warning("The provided torrent was not added and it was timed out. magnet was:- {}".format(magnet))
                         LOGGER.error(ext_hash)
-                        sendMessage(f"The torrent was not added due to an error.", self.__listener.bot, self.__listener.message)
+                        sendMessage(f"The torrent was not added due to an error.", self.__listener.bot, self.__listener.message) 
                         return False
                     # commenting in favour of wrong torrent getting returned
                     # ctor_new = client.torrents_info()
@@ -134,15 +134,15 @@ class QbitWrap:
                         LOGGER.info("Got torrent info from ext hash.")
                         return ext_res[0]
             else:
-                sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message)
+                sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message) 
         except qba.UnsupportedMediaType415Error as e:
             #will not be used ever ;)
             LOGGER.error("Unsupported file was detected in the magnet here")
-            sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message)
+            sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message) 
             return False
         except Exception as e:
             LOGGER.error("{}\n{}".format(e,traceback.format_exc()))
-            sendMessage(f"Error occured check logs.", self.__listener.bot, self.__listener.message)
+            sendMessage(f"Error occured check logs.", self.__listener.bot, self.__listener.message) 
             return False
 
     def add_torrent_file(self, path,message):
@@ -158,21 +158,21 @@ class QbitWrap:
             ext_res = client.torrents_info(torrent_hashes=ext_hash)
             if len(ext_res) > 0:
                 LOGGER.info(f"This torrent is in list {ext_res} {path} {ext_hash}")
-                sendMessage(f"This torrent is alreaded in the leech list.", self.__listener.bot, self.__listener.message)
+                sendMessage(f"This torrent is alreaded in the leech list.", self.__listener.bot, self.__listener.message) 
                 return False
-
+            
             # hot fix for the below issue
             savepath = os.path.join(DOWNLOAD_DIR, str(self.__listener.uid))
 
             op = client.torrents_add(torrent_files=[path], save_path=savepath)
-
+            
             # TODO uncomment the below line and remove the above fix when fixed https://github.com/qbittorrent/qBittorrent/issues/13572
             # op = client.torrents_add(torrent_files=[path])
             #this method dosent return anything so have to work around
-
+            
             if op.lower() == "ok.":
                 st = datetime.now()
-
+                
                 ext_res = client.torrents_info(torrent_hashes=ext_hash)
                 if len(ext_res) > 0:
                     LOGGER.info("Got torrent info from ext hash.")
@@ -182,7 +182,7 @@ class QbitWrap:
                     if (datetime.now() - st).seconds >= 20:
                         LOGGER.warning("The provided torrent was not added and it was timed out. file path was:- {}".format(path))
                         LOGGER.error(ext_hash)
-                        sendMessage(f"The torrent was not added due to an error.", self.__listener.bot, self.__listener.message)
+                        sendMessage(f"The torrent was not added due to an error.", self.__listener.bot, self.__listener.message) 
                         return False
                     #ctor_new = client.torrents_info()
                     #if len(ctor_new) > ctor:
@@ -193,20 +193,20 @@ class QbitWrap:
                         return ext_res[0]
 
             else:
-                sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message)
+                sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message) 
         except qba.UnsupportedMediaType415Error as e:
             #will not be used ever ;)
             LOGGER.error("Unsupported file was detected in the magnet here")
-            sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message)
+            sendMessage(f"This is an unsupported/invalid link.", self.__listener.bot, self.__listener.message) 
             return False
         except Exception as e:
             LOGGER.error("{}\n{}".format(e,traceback.format_exc()))
-            sendMessage(f"Error occured check logs.", self.__listener.bot, self.__listener.message)
+            sendMessage(f"Error occured check logs.", self.__listener.bot, self.__listener.message) 
             return False
 
     def cancel_download(self):
         LOGGER.info(f'Cancelling download on user request')
-        self._is_canceled = True
+        self._is_canceled = True   
 
     def update_progress(self, client=None,message=None,torrent=None,task=None,except_retry=0,sleepsec=None):
         #task = QBTask(torrent, message, client)
@@ -234,7 +234,7 @@ class QbitWrap:
                 task.cancel = True
                 task.set_inactive()
                 message.edit("Torrent canceled ```{}``` ".format(torrent.name),buttons=None)
-
+            
             if int(tor_info.size) > (int(MAX_TORRENT_SIZE) * 1024 * 1024 * 1024):
                 self.__onDownloadError(f"<b>Torrent Max Size Allowed is {MAX_TORRENT_SIZE}GB. Thus Download Stopped!.</b>")
                 client.torrents_delete(torrent_hashes=tor_info.hash,delete_files=True)
@@ -252,7 +252,7 @@ class QbitWrap:
                     self.__onDownloadError(f"<b>Getting MetaData of {tor_info.name} Failed</b>. <i>Thus Download Stopped!.</i>")
                     client.torrents_delete(torrent_hashes=tor_info.hash,delete_files=True)
                     self.updater.cancel()
-
+                
                 if  tor_info.state == "stalledDL":
                     is_stalled = True
                 else:
@@ -270,7 +270,7 @@ class QbitWrap:
                         if ENABLE_DRIVE_SEARCH:
                             gdrive = GoogleDriveHelper(None)
                             msg = gdrive.search_drives(tor_info.name)
-                            if msg:
+                            if msg:   
                                 response = Telegraph(access_token=TELEGRAPH_TOKEN).create_page(
                                                     title = 'ShiNobi Drive',
                                                     author_name='ShiNobi-GhostLeech',
@@ -279,14 +279,14 @@ class QbitWrap:
                                 telegraph = f"Search Results for {tor_info.name}👇\nhttps://telegra.ph/{response}"
                                 self.__listener.onDownloadAlreadyComplete(f"{telegraph}")
                                 client.torrents_delete(torrent_hashes=tor_info.hash,delete_files=True)
-                                self.cancel_download()
+                                self.cancel_download()    
 
                 if tor_info.state == "error":
 
                     self.__onDownloadError(f"<b>Torrent {tor_info.name} Errored Out!. Thus Download Stopped!.</b>")
                     client.torrents_delete(torrent_hashes=tor_info.hash,delete_files=True)
                     self.updater.cancel()
-
+                
                 #aio timeout have to switch to global something
                 # time.sleep(sleepsec)
                 if self.is_active:
@@ -315,7 +315,7 @@ class QbitWrap:
                     else:
                         #return update_progress(client,message,torrent)
                         pass
-
+                    
             except Exception as e:
                 LOGGER.error("{}\n\n{}\n\nn{}".format(e,traceback.format_exc(),tor_info))
                 try:
@@ -356,7 +356,7 @@ class QbitWrap:
         aio.sleep(1)
         msg = ""
         tors = client.torrents_info(status_filter="stalled|downloading|stalled_downloading")
-
+        
         msg += "▶️Resumed {} torrents check the status for more...▶️".format(len(tors))
 
         for i in tors:
@@ -375,7 +375,7 @@ class QbitWrap:
 
         message.reply(msg,parse_mode="html")
         message.delete()
-
+        
     def delete_this(self, ext_hash):
         client = get_client()
         client.torrents_delete(delete_files=True,torrent_hashes=ext_hash)
@@ -406,12 +406,12 @@ class QbitWrap:
                         i.state
                     )
             if msg.strip() == "":
-                return "No torrents running currently...."
+                return "No torrents running currently...." 
             return msg
         else:
             msg = "No torrents running currently...."
             return msg
-
+        
         if olen == 0:
             msg = "No torrents running currently...."
             return msg
@@ -453,7 +453,7 @@ class QbitWrap:
             time.sleep(0.5)
             if isdone:
                 break
-        # sendMessage(rmmsg, self.__listener.bot, self.__listener.message)
+        sendMessage(rmmsg, self.__listener.bot, self.__listener.message) 
 
 
     def register_torrent(self, bot,message,link,listener,magnet=False,file=False):
@@ -467,7 +467,7 @@ class QbitWrap:
                 return False
             LOGGER.info(torrent)
             if torrent.progress == 1 and torrent.completion_on > 1:
-                sendMessage(f"The provided torrent was already completly downloaded.", self.__listener.bot, self.__listener.message)
+                sendMessage(f"The provided torrent was already completly downloaded.", self.__listener.bot, self.__listener.message) 
                 return True
             else:
                 self.__onDownloadStart(listener, torrent, message, client)
@@ -478,16 +478,16 @@ class QbitWrap:
                 self.message = message
                 if self.gl_enabled:
                     self.ghostleech()
-                self.updater = setInterval(self.update_interval, self.update_progress)
+                self.updater = setInterval(self.update_interval, self.update_progress) 
                 update_all_messages()
         if file:
             torrent = self.add_torrent_file(link,message)
             if isinstance(torrent,bool):
                 return False
             LOGGER.info(torrent)
-
+            
             if torrent.progress == 1:
-                sendMessage(f"The provided torrent was already completly downloaded.", self.__listener.bot, self.__listener.message)
+                sendMessage(f"The provided torrent was already completly downloaded.", self.__listener.bot, self.__listener.message) 
                 return True
             else:
                 self.__onDownloadStart(listener, torrent, message, client)
@@ -498,7 +498,7 @@ class QbitWrap:
                 self.message = message
                 if self.gl_enabled:
                     self.ghostleech()
-                self.updater = setInterval(self.update_interval, self.update_progress)
+                self.updater = setInterval(self.update_interval, self.update_progress) 
                 update_all_messages()
         # except ProcessCanceled:
         #         self.__onDownloadError("<b>QbitTorrent Download Stopped.</b>")
@@ -507,10 +507,10 @@ class QbitWrap:
         #     self.__onDownloadComplete()
 
     def __onDownloadComplete(self):
-        self.__listener.onDownloadComplete()
+        self.__listener.onDownloadComplete() 
 
     def __onDownloadStart(self, listener, torrent, message, client):
-        self.gid = ''.join(random.SystemRandom().choices(string.ascii_letters + string.digits, k=4))
+        self.gid = ''.join(random.SystemRandom().choices(string.ascii_letters + string.digits, k=4)) 
         with download_dict_lock:
             task = QBTask(self, listener, torrent, message, client)
             download_dict[listener.uid] = task
