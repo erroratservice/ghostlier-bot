@@ -19,3 +19,4 @@ pySmartDL
 telegraph
 beautifulsoup4
 torrentool
+python-telegram-bot
