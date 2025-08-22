@@ -32,4 +32,5 @@ RUN chmod 777 /usr/src/app
 COPY . .
 RUN python3 -m venv ghost
 RUN ghost/bin/pip3 install --no-cache-dir -r requirements.txt
+RUN chmod +x aria.sh
 CMD ["bash", "start.sh"]
