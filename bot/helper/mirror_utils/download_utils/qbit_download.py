@@ -476,8 +476,8 @@ class QbitWrap:
                 self._client = client
                 self._torrent = torrent
                 self.message = message
-                # if self.gl_enabled:
-                #     self.ghostleech()
+                if self.gl_enabled:
+                    self.ghostleech()
                 self.updater = setInterval(self.update_interval, self.update_progress)
                 update_all_messages()
         if file:
@@ -496,8 +496,8 @@ class QbitWrap:
                 self._client = client
                 self._torrent = torrent
                 self.message = message
-                # if self.gl_enabled:
-                #     self.ghostleech()
+                if self.gl_enabled:
+                    self.ghostleech()
                 self.updater = setInterval(self.update_interval, self.update_progress)
                 update_all_messages()
         # except ProcessCanceled:
