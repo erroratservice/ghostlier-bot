@@ -1,0 +1,11 @@
+pyrofork==2.2.11
+tgcrypto
+requests
+aiohttp
+aiofiles
+qbittorrent-api==2020.7.7
+natsort
+Pillow
+tenacity
+aioshutil
+python-dotenv
