@@ -91,7 +91,13 @@ class LeechListener(LeechListeners):
         upload_status = UploadStatus(uploader, os.path.getsize(path), self)
         with download_dict_lock:
             download_dict[self.uid] = upload_status
-        asyncio.create_task(uploader.upload())
+
+        # Robust event loop handling: create_task if loop is running, else run
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(uploader.upload())
+        except RuntimeError:
+            asyncio.run(uploader.upload())
 
     def onDownloadError(self, error: str):
         sendMessage(f"Download error: {error}", self.bot, self.message)
