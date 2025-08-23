@@ -25,7 +25,6 @@ import threading
 import shutil
 import random
 import string
-import asyncio
 import logging
 
 ariaDlManager = AriaDownloadHelper()
@@ -47,14 +46,18 @@ class LeechListener(LeechListeners):
         self.password = password
 
     def clean(self):
-        asyncio.run(self.clean_async())
+        try:
+            self.clean_async()
+        except Exception as e:
+            print(f"[ERROR] Exception in clean: {e}")
+            logger.error(f"[ERROR] Exception in clean: {e}", exc_info=True)
 
-    async def clean_async(self):
+    def clean_async(self):
         try:
             if Interval:
                 Interval[0].cancel()
                 del Interval[0]
-            await delete_all_messages_async()
+            delete_all_messages()
         except IndexError:
             pass
 
@@ -83,7 +86,6 @@ class LeechListener(LeechListeners):
             leech_mode = get_user_pref(user_id, "leech_mode", "document")
             thumbnail = get_user_pref(user_id, "thumbnail", None)
 
-            # Debug print/log for all possibly problematic values
             print(f"[DEBUG] onDownloadComplete user_id: {user_id}")
             print(f"[DEBUG] onDownloadComplete leech_mode: {leech_mode}")
             print(f"[DEBUG] onDownloadComplete thumbnail: {thumbnail}")
@@ -93,13 +95,6 @@ class LeechListener(LeechListeners):
             logger.info(f"[DEBUG] onDownloadComplete thumbnail: {thumbnail}")
             logger.info(f"[DEBUG] onDownloadComplete path: {path}")
 
-            # Use UploadStatus as before
-            # --- PATCH FOR DEBUGGING: try both calls by commenting/uncommenting ---
-
-            # Simple version (bypass extra args)
-            # uploader = TelegramUploader(self.bot, self.message.chat.id, self, path)
-
-            # Full version with custom args (uncomment to test as needed)
             uploader = TelegramUploader(
                 self.bot,
                 self.message.chat.id,
@@ -113,29 +108,30 @@ class LeechListener(LeechListeners):
             with download_dict_lock:
                 download_dict[self.uid] = upload_status
 
-            print("[DEBUG] About to schedule upload...")
-            logger.info("[DEBUG] About to schedule upload...")
+            print("[DEBUG] About to start synchronous upload...")
+            logger.info("[DEBUG] About to start synchronous upload...")
+            uploader.upload()  # SYNC - no async used
 
-            # Robust event loop handling
-            try:
-                loop = asyncio.get_running_loop()
-                loop.create_task(uploader.upload())
-                print("[DEBUG] Upload scheduled with create_task")
-                logger.info("[DEBUG] Upload scheduled with create_task")
-            except RuntimeError:
-                print("[DEBUG] No running event loop, using asyncio.run")
-                logger.info("[DEBUG] No running event loop, using asyncio.run")
-                asyncio.run(uploader.upload())
-                print("[DEBUG] Upload executed with asyncio.run")
-                logger.info("[DEBUG] Upload executed with asyncio.run")
+            print("[DEBUG] Synchronous upload finished!")
+            logger.info("[DEBUG] Synchronous upload finished!")
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             print(f"[ERROR] Exception in onDownloadComplete: {e}")
             logger.error(f"[ERROR] Exception in onDownloadComplete: {e}", exc_info=True)
-            sendMessage(f"Upload error: {e}", self.bot, self.message)
+            try:
+                sendMessage(f"Telegram upload error: {e}", self.bot, self.message)
+            except Exception as e2:
+                print(f"[ERROR] Failed to send upload error message: {e2}")
+                logger.error(f"[ERROR] Failed to send upload error message: {e2}", exc_info=True)
 
     def onDownloadError(self, error: str):
-        sendMessage(f"Download error: {error}", self.bot, self.message)
+        try:
+            sendMessage(f"Download error: {error}", self.bot, self.message)
+        except Exception as e:
+            print(f"[ERROR] Failed to send download error message: {e}")
+            logger.error(f"[ERROR] Failed to send download error message: {e}", exc_info=True)
 
     def onUploadStarted(self):
         pass
@@ -157,7 +153,11 @@ class LeechListener(LeechListeners):
             update_all_messages()
 
     def onUploadError(self, error):
-        sendMessage(f"Telegram upload error: {error}", self.bot, self.message)
+        try:
+            sendMessage(f"Telegram upload error: {error}", self.bot, self.message)
+        except Exception as e:
+            print(f"[ERROR] Failed to send upload error message: {e}")
+            logger.error(f"[ERROR] Failed to send upload error message: {e}", exc_info=True)
 
 def _leech(bot: Client, message: Message, isTar=False, extract=False, isZip=False):
     args = message.text.split(" ", maxsplit=1)
