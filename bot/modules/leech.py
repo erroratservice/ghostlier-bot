@@ -26,11 +26,14 @@ import shutil
 import random
 import string
 import asyncio
+import logging
 
 ariaDlManager = AriaDownloadHelper()
 ariaDlManager.start_listener()
 qbit = QbitWrap()
 qbitclient = qbit.get_client()
+
+logger = logging.getLogger(__name__)
 
 class LeechListener(LeechListeners):
     def __init__(self, bot, update, isTar=False, tag=None, extract=False, isZip=False, source=None, genid=None, password=None):
@@ -44,7 +47,6 @@ class LeechListener(LeechListeners):
         self.password = password
 
     def clean(self):
-        # Await the async cleanup function
         asyncio.run(self.clean_async())
 
     async def clean_async(self):
@@ -60,44 +62,77 @@ class LeechListener(LeechListeners):
         pass
 
     def onDownloadProgress(self, current=None, total=None):
-        # Optional: update status messages here
         pass
 
     def onDownloadComplete(self):
-        with download_dict_lock:
-            download = download_dict[self.uid]
-            name = download.name()
-            size = download.size_raw()
-            m_path = download.upload_path()
-        path = m_path
-        if self.isTar:
-            path = fs_utils.tar(m_path, self) or m_path
-        elif self.isZip:
-            path = fs_utils.zip(m_path, f"{DOWNLOAD_DIR}{self.uid}/", self) or m_path
-        elif self.extract:
-            path = fs_utils.get_base_name(m_path)
-        up_name = os.path.basename(path)
-        user_id = self.message.from_user.id if self.message.from_user else None
-        leech_mode = get_user_pref(user_id, "leech_mode", "document")
-        thumbnail = get_user_pref(user_id, "thumbnail", None)
-        uploader = TelegramUploader(
-            self.bot,
-            self.message.chat.id,
-            self,
-            path,
-            as_document=(leech_mode == "document"),
-            thumbnail=thumbnail
-        )
-        upload_status = UploadStatus(uploader, os.path.getsize(path), self)
-        with download_dict_lock:
-            download_dict[self.uid] = upload_status
-
-        # Robust event loop handling: create_task if loop is running, else run
         try:
-            loop = asyncio.get_running_loop()
-            loop.create_task(uploader.upload())
-        except RuntimeError:
-            asyncio.run(uploader.upload())
+            with download_dict_lock:
+                download = download_dict[self.uid]
+                name = download.name()
+                size = download.size_raw()
+                m_path = download.upload_path()
+            path = m_path
+            if self.isTar:
+                path = fs_utils.tar(m_path, self) or m_path
+            elif self.isZip:
+                path = fs_utils.zip(m_path, f"{DOWNLOAD_DIR}{self.uid}/", self) or m_path
+            elif self.extract:
+                path = fs_utils.get_base_name(m_path)
+            up_name = os.path.basename(path)
+            user_id = self.message.from_user.id if self.message.from_user else None
+            leech_mode = get_user_pref(user_id, "leech_mode", "document")
+            thumbnail = get_user_pref(user_id, "thumbnail", None)
+
+            # Debug print/log for all possibly problematic values
+            print(f"[DEBUG] onDownloadComplete user_id: {user_id}")
+            print(f"[DEBUG] onDownloadComplete leech_mode: {leech_mode}")
+            print(f"[DEBUG] onDownloadComplete thumbnail: {thumbnail}")
+            print(f"[DEBUG] onDownloadComplete path: {path}")
+            logger.info(f"[DEBUG] onDownloadComplete user_id: {user_id}")
+            logger.info(f"[DEBUG] onDownloadComplete leech_mode: {leech_mode}")
+            logger.info(f"[DEBUG] onDownloadComplete thumbnail: {thumbnail}")
+            logger.info(f"[DEBUG] onDownloadComplete path: {path}")
+
+            # Use UploadStatus as before
+            # --- PATCH FOR DEBUGGING: try both calls by commenting/uncommenting ---
+
+            # Simple version (bypass extra args)
+            # uploader = TelegramUploader(self.bot, self.message.chat.id, self, path)
+
+            # Full version with custom args (uncomment to test as needed)
+            uploader = TelegramUploader(
+                self.bot,
+                self.message.chat.id,
+                self,
+                path,
+                as_document=(leech_mode == "document"),
+                thumbnail=thumbnail
+            )
+
+            upload_status = UploadStatus(uploader, os.path.getsize(path), self)
+            with download_dict_lock:
+                download_dict[self.uid] = upload_status
+
+            print("[DEBUG] About to schedule upload...")
+            logger.info("[DEBUG] About to schedule upload...")
+
+            # Robust event loop handling
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(uploader.upload())
+                print("[DEBUG] Upload scheduled with create_task")
+                logger.info("[DEBUG] Upload scheduled with create_task")
+            except RuntimeError:
+                print("[DEBUG] No running event loop, using asyncio.run")
+                logger.info("[DEBUG] No running event loop, using asyncio.run")
+                asyncio.run(uploader.upload())
+                print("[DEBUG] Upload executed with asyncio.run")
+                logger.info("[DEBUG] Upload executed with asyncio.run")
+
+        except Exception as e:
+            print(f"[ERROR] Exception in onDownloadComplete: {e}")
+            logger.error(f"[ERROR] Exception in onDownloadComplete: {e}", exc_info=True)
+            sendMessage(f"Upload error: {e}", self.bot, self.message)
 
     def onDownloadError(self, error: str):
         sendMessage(f"Download error: {error}", self.bot, self.message)
@@ -106,7 +141,6 @@ class LeechListener(LeechListeners):
         pass
 
     def onUploadProgress(self, current=None, total=None):
-        # Optional: update status messages here
         pass
 
     def onUploadComplete(self):
