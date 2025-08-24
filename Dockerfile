@@ -15,16 +15,13 @@ RUN apt-get update && \
 # Detect architecture, download and install correct qbittorrent-nox 4.1.7 .deb
 RUN ARCH=$(dpkg --print-architecture) && \
     case "$ARCH" in \
-      amd64)  DEB_URL="http://launchpadlibrarian.net/463448601/qbittorrent-nox_4.1.7-1ubuntu3_amd64.deb" ;; \
-      arm64)  DEB_URL="http://launchpadlibrarian.net/463448605/qbittorrent-nox_4.1.7-1ubuntu3_arm64.deb" ;; \
+      amd64)  DEB_URL="https://launchpadlibrarian.net/573077479/qbittorrent-nox_4.2.5-0.1ubuntu2_amd64.deb" ;; \
+      arm64)  DEB_URL="http://launchpadlibrarian.net/573084745/qbittorrent-nox_4.2.5-0.1ubuntu2_arm64.deb" ;; \
       *)      echo "Unsupported architecture: $ARCH" && exit 1 ;; \
     esac && \
     wget -O /tmp/qbittorrent-nox.deb "$DEB_URL" && \
     dpkg -i /tmp/qbittorrent-nox.deb && \
     rm /tmp/qbittorrent-nox.deb
-
-# Verify install
-RUN qbittorrent-nox --version
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/src/app
