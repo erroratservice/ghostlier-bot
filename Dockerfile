@@ -16,7 +16,7 @@ RUN apt-get update && \
 RUN ARCH=$(dpkg --print-architecture) && \
     case "$ARCH" in \
       amd64)  DEB_URL="https://launchpadlibrarian.net/573077479/qbittorrent-nox_4.2.5-0.1ubuntu2_amd64.deb" ;; \
-      arm64)  DEB_URL="http://launchpadlibrarian.net/573084745/qbittorrent-nox_4.2.5-0.1ubuntu2_arm64.deb" ;; \
+      arm64)  DEB_URL="https://launchpadlibrarian.net/573084745/qbittorrent-nox_4.2.5-0.1ubuntu2_arm64.deb" ;; \
       *)      echo "Unsupported architecture: $ARCH" && exit 1 ;; \
     esac && \
     wget -O /tmp/qbittorrent-nox.deb "$DEB_URL" && \
